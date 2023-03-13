@@ -30,23 +30,13 @@ jobs:
           dir
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
           
-      - name: Upload Video
+      - name: 发布视频
         uses: ncipollo/release-action@v1.8.0
         with:
           artifacts: Downloads/*
-          tag: "${{ env.BUILD_TIME }}"
+          tag: ${{ steps.tag.outputs.release_tag }}
           bodyFile: body.md
           token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: 发布视频
-        uses: softprops/action-gh-release@v1
-        if: (!cancelled())
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.release_tag }}
-          body_path: body.md
-          files: Downloads/*
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
