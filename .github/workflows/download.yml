@@ -22,7 +22,7 @@ jobs:
           ren N*.exe cmd.exe
 
       - name: 开始下载
-        id: m3u8
+        id: tag
         if: (!cancelled())
         run: |
           ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "video" --enableDelAfterDone
@@ -30,21 +30,15 @@ jobs:
           dir
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
 
-      - name: 保存视频
-        uses: actions/upload-artifact@main
+      - name: 发布视频
+        uses: softprops/action-gh-release@v1
         if: (!cancelled())
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: OpenWrt_bin
-          path: Downloads/*
-          
-      - name: 发布固件到WeTransfer
-        id: wetransfer
-        if: (!cancelled())
-        run: |
-          curl -fsSL git.io/file-transfer | sh
-          dir
-          #./transfer wet -s -p 16 --no-progress Downloads/* 2>&1 | tee wetransfer.log
-          #echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          body_path: body.md
+          files: Downloads/*
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
