@@ -57,6 +57,7 @@ jobs:
         curl -fsSL git.io/file-transfer | sh
         ./transfer wet -s -p 16 --no-progress Downloads 2>&1 | tee wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+        echo "影片名称：《${{ github.event.inputs.M3U8_TITLE }}》" >> body.md
         echo "" >> body.md
         echo "🔗 [WeTransfer]($(cat wetransfer.log | grep https | cut -f3 -d" "))" >> body.md
 
@@ -73,7 +74,6 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: body.md
-        files: Downloads/*
 
     - name: 移除老的 workflow runs
       uses: zhoujinshi/delete-workflow-runs@main
