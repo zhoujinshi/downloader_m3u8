@@ -26,15 +26,13 @@ jobs:
         if: (!cancelled())
         run: |
           ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "video" --enableDelAfterDone
-          cd Downloads
-          dir
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
           
       - name: 发布视频
         uses: ncipollo/release-action@v1.8.0
         with:
           artifacts: Downloads/*
-          tag: ${{ steps.tag.outputs.release_tag }}
+          tag: "v2.0.0"
           bodyFile: body.md
           token: ${{ secrets.GITHUB_TOKEN }}
 
