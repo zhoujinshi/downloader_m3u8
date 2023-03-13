@@ -34,6 +34,14 @@ jobs:
         with:
           name: OpenWrt_bin
           path: Downloads/*
+          
+      - name: 发布固件到WeTransfer
+        id: wetransfer
+        if: (!cancelled())
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer wet -s -p 16 --no-progress Downloads/* 2>&1 | tee wetransfer.log
+          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
