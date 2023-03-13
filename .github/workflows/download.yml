@@ -22,19 +22,21 @@ jobs:
           ren N*.exe cmd.exe
 
       - name: 开始下载
-        id: tag
+        id: download
         if: (!cancelled())
         run: |
           ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "video" --enableDelAfterDone
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
-          
-      - name: 发布视频
-        uses: ncipollo/release-action@v1.8.0
+
+      - name: 发布视频到release
+        uses: softprops/action-gh-release@v1
+        if: (!cancelled())
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          artifacts: Downloads/*
-          tag: "v2.0.0"
-          bodyFile: body.md
-          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.download.outputs.release_tag }}
+          body_path: body.md
+          files: Downloads/*
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
