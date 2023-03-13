@@ -1,4 +1,4 @@
-name: m3u8_download
+name: download
 on:
   workflow_dispatch:
     inputs:
@@ -29,7 +29,7 @@ jobs:
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
 
       - name: 上传到release
-        uses: softprops/action-gh-release@main
+        uses: softprops/action-gh-release@v1
         if: (!cancelled())
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,17 +39,16 @@ jobs:
           files: "Downloads/*"
 
       - name: 移除老的 workflow runs
-        uses: zhoujinshi/delete-workflow-runs@main
-        if: (!cancelled())
-        with:
-          retain_days: 1
-          keep_minimum_runs: 3
+          uses: zhoujinshi/delete-workflow-runs@main
+          with:
+            retain_days: 1
+            keep_minimum_runs: 3
 
-      - name: 移除老的 Releases
-        uses: softprops/action-gh-release@v1
-        if: (!cancelled())
-        with:
-          keep_latest: 3
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: 移除老的 Releases
+          uses: dev-drprasad/delete-older-releases@v0.1.0
+          if: inputs.UPLOAD_RELEASE == true && !cancelled()
+          with:
+            keep_latest: 3
+            delete_tags: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
