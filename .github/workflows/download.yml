@@ -16,7 +16,7 @@ jobs:
       - name: 检出主分支
         uses: actions/checkout@main
 
-      - name: 下载工具
+      - name: 初始化下载环境
         id: tool
         run: |
           unzip wget.zip
@@ -25,36 +25,65 @@ jobs:
           del *G.exe
           ren N*.exe cmd.exe
 
-      - name: 开始下载
+      - name: 开始下载视频资源
         id: download
         if: (!cancelled())
-        run: |
-          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "${{ github.event.inputs.M3U8_TITLE }}" --enableDelAfterDone
-          echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
-          echo "片名：《${{ github.event.inputs.M3U8_TITLE }}》" >> body.md
-
-      - name: 发布视频到release
-        uses: softprops/action-gh-release@v1
-        if: (!cancelled())
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "${{ github.event.inputs.M3U8_TITLE }}" --enableDelAfterDone
+          
+      - name: 缓存全部文件
+        uses: actions/upload-artifact@main
+        if: inputs.UPLOAD_BIN_DIR == true
         with:
-          tag_name: ${{ steps.download.outputs.release_tag }}
-          body_path: body.md
-          files: Downloads/*
+          name: Downloads
+          path: Downloads
 
-      - name: 移除老的 workflow runs
-        uses: zhoujinshi/delete-workflow-runs@main
-        if: (!cancelled())
-        with:
-          retain_days: 1
-          keep_minimum_runs: 3
+  deploy:
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+    - name: 调取缓存全部文件
+      uses: actions/download-artifact@main
+      with:
+        name: Downloads
+        path: Downloads
+      
+    - name: 发布视频到WeTransfer
+      id: wetransfer
+      if: (!cancelled())
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer wet -s -p 16 --no-progress Downloads 2>&1 | tee wetransfer.log
+        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+        echo "" >> body.md
+        echo "🔗 [WeTransfer]($(cat wetransfer.log | grep https | cut -f3 -d" "))" >> body.md
 
-      - name: 移除老的 Releases
-        uses: dev-drprasad/delete-older-releases@v0.1.0
-        if: (!cancelled())
-        with:
-          keep_latest: 3
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: 生成版本号
+      id: tag
+      if: (!cancelled())
+      run: echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+
+    - name: 发布视频到release
+      uses: softprops/action-gh-release@v1
+      if: (!cancelled())
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: body.md
+        files: Downloads/*
+
+    - name: 移除老的 workflow runs
+      uses: zhoujinshi/delete-workflow-runs@main
+      if: (!cancelled())
+      with:
+        retain_days: 1
+        keep_minimum_runs: 3
+
+    - name: 移除老的 Releases
+      uses: dev-drprasad/delete-older-releases@v0.1.0
+      if: (!cancelled())
+      with:
+        keep_latest: 3
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
