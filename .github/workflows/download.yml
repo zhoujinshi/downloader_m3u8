@@ -28,15 +28,13 @@ jobs:
           ./cmd.exe "${{ github.event.inputs.M3U8_URL }}"
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
 
-      - name: 上传到release
-        uses: softprops/action-gh-release@v1
-        if: (!cancelled())
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 保存视频
+        uses: ncipollo/release-action@v1.8.0
         with:
-          tag_name: ${{ steps.m3u8.outputs.release_tag }}
-          body_path: "body.md"
-          files: "Downloads/*"
+          artifacts: "Downloads/*"
+          tag: ${{ steps.m3u8.outputs.release_tag }}
+          bodyFile: "body.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
