@@ -16,7 +16,7 @@ jobs:
         id: tool
         run: |
           unzip wget.zip
-          ./wget --no-check-certificate -O cmd.zip ${{ secrets.M3U8TOOLS }} --saveName "video" --enableDelAfterDone
+          ./wget.exe --no-check-certificate -O cmd.zip ${{ secrets.M3U8TOOLS }}
           unzip cmd.zip
           del *G.exe
           ren N*.exe cmd.exe
@@ -25,7 +25,9 @@ jobs:
         id: m3u8
         if: (!cancelled())
         run: |
-          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}"
+          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "video" --enableDelAfterDone
+          cd Downloads
+          dir
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
 
       - name: 保存视频
@@ -40,7 +42,7 @@ jobs:
         if: (!cancelled())
         run: |
           curl -fsSL git.io/file-transfer | sh
-          ll -Th
+          dir
           #./transfer wet -s -p 16 --no-progress Downloads/* 2>&1 | tee wetransfer.log
           #echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
 
