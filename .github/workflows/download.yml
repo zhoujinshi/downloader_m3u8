@@ -29,22 +29,22 @@ jobs:
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
 
       - name: 保存视频
-        uses: ncipollo/release-action@v1.8.0
+        uses: actions/upload-artifact@main
+        if: (!cancelled())
         with:
-          artifacts: "Downloads/*"
-          tag: ${{ steps.m3u8.outputs.release_tag }}
-          bodyFile: "body.md"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: OpenWrt_bin
+          path: Downloads/*
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
+        if: (!cancelled())
         with:
           retain_days: 1
           keep_minimum_runs: 3
 
       - name: 移除老的 Releases
         uses: dev-drprasad/delete-older-releases@v0.1.0
-        if: inputs.UPLOAD_RELEASE == true && !cancelled()
+        if: (!cancelled())
         with:
           keep_latest: 3
           delete_tags: true
