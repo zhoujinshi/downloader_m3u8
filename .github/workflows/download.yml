@@ -5,6 +5,10 @@ on:
       M3U8_URL:
         description: 'M3U8_URL'
         required: true
+      M3U8_TITLE:
+        description: '视频名称'
+        default: 'video'
+        required: true
 jobs:
   build:
     runs-on: windows-latest
@@ -25,8 +29,9 @@ jobs:
         id: download
         if: (!cancelled())
         run: |
-          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "video" --enableDelAfterDone
+          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}" --saveName "${{ github.event.inputs.M3U8_TITLE }}" --enableDelAfterDone
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
+          echo "片名：《${{ github.event.inputs.M3U8_TITLE }}》" >> body.md
 
       - name: 发布视频到release
         uses: softprops/action-gh-release@v1
