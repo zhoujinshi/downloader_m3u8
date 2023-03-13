@@ -1,4 +1,5 @@
 name: download
+run-name: ${{ github.actor }} GitHub Actions M3U8 Download
 on:
   workflow_dispatch:
     inputs:
