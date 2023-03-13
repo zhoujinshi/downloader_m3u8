@@ -1,0 +1,55 @@
+name: m3u8_download
+on:
+  workflow_dispatch:
+    inputs:
+      M3U8_URL:
+        description: 'M3U8_URL'
+        required: true
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: 检出主分支
+        uses: actions/checkout@main
+
+      - name: 下载工具
+        id: tool
+        run: |
+          unzip wget.zip
+          ./wget --no-check-certificate -O cmd.zip ${{ secrets.M3U8TOOLS }}
+          unzip cmd.zip
+          del *G.exe
+          ren N*.exe cmd.exe
+
+      - name: 开始下载
+        id: m3u8
+        if: (!cancelled())
+        run: |
+          ./cmd.exe "${{ github.event.inputs.M3U8_URL }}"
+          echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
+
+      - name: 上传到release
+        uses: softprops/action-gh-release@main
+        if: (!cancelled())
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.m3u8.outputs.release_tag }}
+          body_path: "body.md"
+          files: "Downloads/*"
+
+      - name: 移除老的 workflow runs
+        uses: zhoujinshi/delete-workflow-runs@main
+        if: (!cancelled())
+        with:
+          retain_days: 1
+          keep_minimum_runs: 3
+
+      - name: 移除老的 Releases
+        uses: softprops/action-gh-release@v1
+        if: (!cancelled())
+        with:
+          keep_latest: 3
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
