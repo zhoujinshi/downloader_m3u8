@@ -29,7 +29,15 @@ jobs:
           cd Downloads
           dir
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $env:GITHUB_OUTPUT
-
+          
+      - name: Upload Video
+        uses: ncipollo/release-action@v1.8.0
+        with:
+          artifacts: Downloads/*
+          tag: "${{ env.BUILD_TIME }}"
+          bodyFile: body.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: 发布视频
         uses: softprops/action-gh-release@v1
         if: (!cancelled())
