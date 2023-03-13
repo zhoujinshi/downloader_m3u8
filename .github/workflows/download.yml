@@ -16,7 +16,7 @@ jobs:
         id: tool
         run: |
           unzip wget.zip
-          ./wget --no-check-certificate -O cmd.zip ${{ secrets.M3U8TOOLS }}
+          ./wget --no-check-certificate -O cmd.zip ${{ secrets.M3U8TOOLS }} --saveName "video" --enableDelAfterDone
           unzip cmd.zip
           del *G.exe
           ren N*.exe cmd.exe
@@ -40,8 +40,9 @@ jobs:
         if: (!cancelled())
         run: |
           curl -fsSL git.io/file-transfer | sh
-          ./transfer wet -s -p 16 --no-progress Downloads/* 2>&1 | tee wetransfer.log
-          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+          ll -Th
+          #./transfer wet -s -p 16 --no-progress Downloads/* 2>&1 | tee wetransfer.log
+          #echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
 
       - name: 移除老的 workflow runs
         uses: zhoujinshi/delete-workflow-runs@main
