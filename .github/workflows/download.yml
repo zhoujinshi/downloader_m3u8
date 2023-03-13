@@ -39,16 +39,16 @@ jobs:
           files: "Downloads/*"
 
       - name: 移除老的 workflow runs
-          uses: zhoujinshi/delete-workflow-runs@main
-          with:
-            retain_days: 1
-            keep_minimum_runs: 3
+        uses: zhoujinshi/delete-workflow-runs@main
+        with:
+          retain_days: 1
+          keep_minimum_runs: 3
 
-        - name: 移除老的 Releases
-          uses: dev-drprasad/delete-older-releases@v0.1.0
-          if: inputs.UPLOAD_RELEASE == true && !cancelled()
-          with:
-            keep_latest: 3
-            delete_tags: true
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 移除老的 Releases
+        uses: dev-drprasad/delete-older-releases@v0.1.0
+        if: inputs.UPLOAD_RELEASE == true && !cancelled()
+        with:
+          keep_latest: 3
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
