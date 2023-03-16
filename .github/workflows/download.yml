@@ -1,5 +1,5 @@
 name: download
-run-name: ${{ github.actor }} GitHub Actions M3U8 Download
+run-name: ${{ inputs.M3U8_TITLE }} GitHub Actions M3U8 Download
 on:
   workflow_dispatch:
     inputs:
@@ -84,7 +84,7 @@ jobs:
         keep_minimum_runs: 3
 
     - name: 移除老的 Releases
-      uses: dev-drprasad/delete-older-releases@v0.1.0
+      uses: dev-drprasad/delete-older-releases@master
       if: (!cancelled())
       with:
         keep_latest: 3
